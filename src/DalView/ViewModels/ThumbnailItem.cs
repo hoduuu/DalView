@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -39,6 +40,10 @@ public partial class ThumbnailItem : ObservableObject
                 if (t.Status == TaskStatus.RanToCompletion)
                 {
                     Application.Current.Dispatcher.Invoke(() => Thumbnail = t.Result);
+                }
+                else if (t.Status == TaskStatus.Faulted)
+                {
+                    Debug.WriteLine($"Thumbnail render failed for page {PageIndex}: {t.Exception}");
                 }
             }, TaskScheduler.Default);
     }

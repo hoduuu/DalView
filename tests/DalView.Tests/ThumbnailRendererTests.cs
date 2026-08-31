@@ -19,4 +19,16 @@ public class ThumbnailRendererTests
         Assert.Equal(120, image.PixelWidth);
         Assert.Equal(120, image.PixelHeight); // fixture page is 200x200 (square), so height == width at fixed thumbnail width
     }
+
+    [Fact]
+    public void RenderThumbnail_Page1_ProducesImage_WithExpectedWidth()
+    {
+        var bytes = MinimalPdfBuilder.Build("Page One", "Page Two");
+        using var document = PdfDocument.Load(new MemoryStream(bytes));
+
+        var image = ThumbnailRenderer.RenderThumbnail(document, 1);
+
+        Assert.Equal(120, image.PixelWidth);
+        Assert.Equal(120, image.PixelHeight); // fixture page is 200x200 (square), so height == width at fixed thumbnail width
+    }
 }
