@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:pdf="clr-namespace:PdfiumViewer;assembly=PdfiumViewer"
         xmlns:vm="clr-namespace:DalView.ViewModels"
+        xmlns:pdfcore="clr-namespace:PdfiumViewer.Core;assembly=PdfiumViewer"
         Title="달뷰" Height="800" Width="1100" Background="#FAFAF8">
     <Window.DataContext>
         <vm:MainViewModel />
@@ -29,17 +30,41 @@
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem Content="{Binding StatusMessage}" />
         </StatusBar>
-        <pdf:PDFViewer x:Name="Viewer"
-                       Document="{Binding Document, Mode=TwoWay}"
-                       Page="{Binding Page, Mode=TwoWay}"
-                       PageCount="{Binding PageCount, Mode=OneWayToSource}"
-                       Zoom="{Binding Zoom, Mode=TwoWay}"
-                       ZoomMin="{Binding ZoomMin}"
-                       ZoomMax="{Binding ZoomMax}"
-                       FitWidth="{Binding FitWidth}"
-                       Matches="{Binding Matches}"
-                       MatchIndex="{Binding MatchIndex, Mode=TwoWay}"
-                       HighlightAllMatches="{Binding HighlightAllMatches}"
-                       Padding="12" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TabControl Grid.Column="0">
+                <TabItem Header="목차">
+                    <TreeView ItemsSource="{Binding Document.Bookmarks}">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem">
+                                <EventSetter Event="MouseDoubleClick" Handler="BookmarkItem_MouseDoubleClick" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.Resources>
+                            <HierarchicalDataTemplate DataType="{x:Type pdfcore:PdfBookmark}" ItemsSource="{Binding Children}">
+                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                            </HierarchicalDataTemplate>
+                        </TreeView.Resources>
+                    </TreeView>
+                </TabItem>
+            </TabControl>
+
+            <pdf:PDFViewer x:Name="Viewer" Grid.Column="1"
+                           Document="{Binding Document, Mode=TwoWay}"
+                           Page="{Binding Page, Mode=TwoWay}"
+                           PageCount="{Binding PageCount, Mode=OneWayToSource}"
+                           Zoom="{Binding Zoom, Mode=TwoWay}"
+                           ZoomMin="{Binding ZoomMin}"
+                           ZoomMax="{Binding ZoomMax}"
+                           FitWidth="{Binding FitWidth}"
+                           Matches="{Binding Matches}"
+                           MatchIndex="{Binding MatchIndex, Mode=TwoWay}"
+                           HighlightAllMatches="{Binding HighlightAllMatches}"
+                           Padding="12" />
+        </Grid>
     </DockPanel>
 </Window>
