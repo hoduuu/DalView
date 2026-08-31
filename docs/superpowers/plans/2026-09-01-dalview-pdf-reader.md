@@ -648,10 +648,50 @@ No unit test for this task — it is pure XAML data-binding against a third-part
 
 Wrap the existing `<pdf:PDFViewer .../>` element in `src/DalView/MainWindow.xaml` inside a `Grid` with two columns, and add a `TabControl` sidebar in the first column. Replace the `<DockPanel>` body (everything between `<Window.DataContext>...</Window.DataContext>` and `</Window>`) with:
 
+Keep the `<ToolBar>` content exactly as it stands after Task 2 (the file already has it — do not delete or replace it, only the surrounding `<DockPanel>`/`<Grid>` structure changes). For reference, the ToolBar's full content at this point is:
+
+```xml
+        <ToolBar DockPanel.Dock="Top">
+            <Button Content="열기" Command="{Binding OpenFileCommand}" Padding="8,2" />
+            <Separator />
+            <TextBox Width="50" Text="{Binding Page, Mode=TwoWay}" TextAlignment="Center" />
+            <TextBlock VerticalAlignment="Center" Margin="4,0">
+                <Run Text="/ " /><Run Text="{Binding PageCount, Mode=OneWay}" />
+            </TextBlock>
+            <Separator />
+            <Button Content="－" Command="{Binding ZoomOutCommand}" Width="28" />
+            <TextBlock VerticalAlignment="Center" Margin="4,0" Text="{Binding Zoom, StringFormat={}{0:P0}}" />
+            <Button Content="＋" Command="{Binding ZoomInCommand}" Width="28" />
+            <CheckBox Content="폭 맞춤" IsChecked="{Binding FitWidth}" VerticalAlignment="Center" Margin="8,0" />
+            <Separator />
+            <TextBox Width="160" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Content="검색" Command="{Binding SearchCommand}" Padding="6,2" />
+            <Button Content="◀" Command="{Binding PreviousMatchCommand}" Width="26" />
+            <Button Content="▶" Command="{Binding NextMatchCommand}" Width="26" />
+        </ToolBar>
+```
+
+The full replacement for the `<DockPanel>` body is:
+
 ```xml
     <DockPanel>
         <ToolBar DockPanel.Dock="Top">
-            <!-- unchanged from Task 1/2 -->
+            <Button Content="열기" Command="{Binding OpenFileCommand}" Padding="8,2" />
+            <Separator />
+            <TextBox Width="50" Text="{Binding Page, Mode=TwoWay}" TextAlignment="Center" />
+            <TextBlock VerticalAlignment="Center" Margin="4,0">
+                <Run Text="/ " /><Run Text="{Binding PageCount, Mode=OneWay}" />
+            </TextBlock>
+            <Separator />
+            <Button Content="－" Command="{Binding ZoomOutCommand}" Width="28" />
+            <TextBlock VerticalAlignment="Center" Margin="4,0" Text="{Binding Zoom, StringFormat={}{0:P0}}" />
+            <Button Content="＋" Command="{Binding ZoomInCommand}" Width="28" />
+            <CheckBox Content="폭 맞춤" IsChecked="{Binding FitWidth}" VerticalAlignment="Center" Margin="8,0" />
+            <Separator />
+            <TextBox Width="160" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Content="검색" Command="{Binding SearchCommand}" Padding="6,2" />
+            <Button Content="◀" Command="{Binding PreviousMatchCommand}" Width="26" />
+            <Button Content="▶" Command="{Binding NextMatchCommand}" Width="26" />
         </ToolBar>
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem Content="{Binding StatusMessage}" />
