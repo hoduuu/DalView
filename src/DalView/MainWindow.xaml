@@ -20,6 +20,11 @@
             <TextBlock VerticalAlignment="Center" Margin="4,0" Text="{Binding Zoom, StringFormat={}{0:P0}}" />
             <Button Content="＋" Command="{Binding ZoomInCommand}" Width="28" />
             <CheckBox Content="폭 맞춤" IsChecked="{Binding FitWidth}" VerticalAlignment="Center" Margin="8,0" />
+            <Separator />
+            <TextBox Width="160" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Content="검색" Command="{Binding SearchCommand}" Padding="6,2" />
+            <Button Content="◀" Command="{Binding PreviousMatchCommand}" Width="26" />
+            <Button Content="▶" Command="{Binding NextMatchCommand}" Width="26" />
         </ToolBar>
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem Content="{Binding StatusMessage}" />
@@ -32,6 +37,9 @@
                        ZoomMin="{Binding ZoomMin}"
                        ZoomMax="{Binding ZoomMax}"
                        FitWidth="{Binding FitWidth}"
+                       Matches="{Binding Matches}"
+                       MatchIndex="{Binding MatchIndex, Mode=TwoWay}"
+                       HighlightAllMatches="{Binding HighlightAllMatches}"
                        Padding="12" />
     </DockPanel>
 </Window>

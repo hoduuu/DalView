@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DalView.Services;
@@ -49,6 +50,18 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string? statusMessage;
 
+    [ObservableProperty]
+    private string searchText = string.Empty;
+
+    [ObservableProperty]
+    private PdfMatches? matches;
+
+    [ObservableProperty]
+    private int matchIndex = -1;
+
+    [ObservableProperty]
+    private bool highlightAllMatches = true;
+
     [RelayCommand]
     private void OpenFile()
     {
@@ -93,4 +106,39 @@ public partial class MainViewModel : ObservableObject
 
     [RelayCommand]
     private void ZoomOut() => Zoom = Math.Max(ZoomMin, Math.Round(Zoom - 0.1, 2));
+
+    [RelayCommand]
+    private async Task SearchAsync()
+    {
+        if (Document == null || string.IsNullOrWhiteSpace(SearchText))
+        {
+            Matches = null;
+            MatchIndex = -1;
+            return;
+        }
+
+        var doc = Document;
+        var query = SearchText;
+        var result = await Task.Run(() => doc.Search(query, matchCase: false, wholeWord: false, 0, doc.PageCount - 1));
+
+        Matches = result;
+        MatchIndex = result.Items.Count > 0 ? 0 : -1;
+        StatusMessage = result.Items.Count > 0
+            ? $"{result.Items.Count}건 찾음"
+            : "찾는 내용이 없습니다.";
+    }
+
+    [RelayCommand]
+    private void NextMatch()
+    {
+        if (Matches == null) return;
+        MatchIndex = SearchNavigator.Next(MatchIndex, Matches.Items.Count);
+    }
+
+    [RelayCommand]
+    private void PreviousMatch()
+    {
+        if (Matches == null) return;
+        MatchIndex = SearchNavigator.Previous(MatchIndex, Matches.Items.Count);
+    }
 }
