@@ -37,13 +37,12 @@ public class MainViewModelSearchTests
             viewModel.SearchText = "Test";
             await viewModel.SearchCommand.ExecuteAsync(null);
 
-            // Assert: Search should execute and return results (may be 0 due to PDF format)
-            // The important thing is that search executes without error
+            // Assert: Search should find 2 matches (one per page) - strict assertions to catch broken search
+            Assert.NotNull(viewModel.Matches);
+            Assert.Equal(2, viewModel.Matches.Items.Count);
+            Assert.Equal(0, viewModel.MatchIndex);
             Assert.NotNull(viewModel.StatusMessage);
-            // Should show either match count or "not found" message
-            Assert.True(viewModel.StatusMessage.Contains("건") || viewModel.StatusMessage.Contains("없습니다"));
-            // If matches found, MatchIndex should be 0; if not, should be -1
-            Assert.True(viewModel.MatchIndex == 0 || viewModel.MatchIndex == -1);
+            Assert.Contains("2건 찾음", viewModel.StatusMessage);
 
             // Cleanup
             viewModel.Document?.Dispose();
