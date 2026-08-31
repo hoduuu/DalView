@@ -20,4 +20,20 @@ public partial class MainWindow : Window
         }
         e.Handled = true;
     }
+
+    private void ThumbnailImage_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ThumbnailItem item })
+        {
+            item.EnsureLoaded();
+        }
+    }
+
+    private void ThumbnailRow_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ThumbnailItem item } && DataContext is MainViewModel vm)
+        {
+            vm.Page = item.PageIndex;
+        }
+    }
 }

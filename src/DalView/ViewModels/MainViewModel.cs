@@ -1,4 +1,6 @@
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -62,6 +64,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool highlightAllMatches = true;
 
+    [ObservableProperty]
+    private ObservableCollection<ThumbnailItem> thumbnails = new();
+
     [RelayCommand]
     private void OpenFile()
     {
@@ -89,6 +94,8 @@ public partial class MainViewModel : ObservableObject
             PdfPath = path;
             Page = 0;
             StatusMessage = $"{Path.GetFileName(path)} ({newDocument.PageCount} pages)";
+            Thumbnails = new ObservableCollection<ThumbnailItem>(
+                Enumerable.Range(0, newDocument.PageCount).Select(i => new ThumbnailItem(newDocument, i)));
         }
         catch (PdfException ex) when (ex.Error == PdfError.PasswordProtected)
         {

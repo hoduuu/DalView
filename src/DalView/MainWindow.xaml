@@ -51,6 +51,19 @@
                         </TreeView.Resources>
                     </TreeView>
                 </TabItem>
+                <TabItem Header="썸네일">
+                    <ListBox ItemsSource="{Binding Thumbnails}"
+                             ScrollViewer.CanContentScroll="True">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="2" MouseDown="ThumbnailRow_MouseDown">
+                                    <Image Width="80" Loaded="ThumbnailImage_Loaded" Source="{Binding Thumbnail}" />
+                                    <TextBlock Text="{Binding DisplayNumber}" VerticalAlignment="Center" Margin="6,0" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </TabItem>
             </TabControl>
 
             <pdf:PDFViewer x:Name="Viewer" Grid.Column="1"
