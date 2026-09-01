@@ -116,10 +116,20 @@ public partial class DocumentTabViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ZoomIn() => Zoom = Math.Min(ZoomMax, Math.Round(Zoom + 0.1, 2));
+    private void ZoomIn()
+    {
+        // FitWidth makes the library ignore Zoom entirely for sizing — leaving it on made the
+        // zoom buttons visibly do nothing. Manually zooming means the user wants manual control.
+        FitWidth = false;
+        Zoom = Math.Min(ZoomMax, Math.Round(Zoom + 0.1, 2));
+    }
 
     [RelayCommand]
-    private void ZoomOut() => Zoom = Math.Max(ZoomMin, Math.Round(Zoom - 0.1, 2));
+    private void ZoomOut()
+    {
+        FitWidth = false;
+        Zoom = Math.Max(ZoomMin, Math.Round(Zoom - 0.1, 2));
+    }
 
     [RelayCommand]
     private async Task SearchAsync()

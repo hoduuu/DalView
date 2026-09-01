@@ -24,24 +24,30 @@
             The real content lives in the ItemsControl below instead, where each tab gets its own
             persistent PDFViewer that is only ever bound to that tab's own Document.
         -->
-        <TabControl DockPanel.Dock="Top" ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab, Mode=TwoWay}">
-            <TabControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type vm:DocumentTabViewModel}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" MaxWidth="160"
-                                   TextTrimming="CharacterEllipsis" Margin="0,0,6,0" />
-                        <Button Content="×" Width="18" Height="18" Padding="0" FontSize="11"
-                                Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                                CommandParameter="{Binding}" />
-                    </StackPanel>
-                </DataTemplate>
-            </TabControl.ItemTemplate>
-            <TabControl.ContentTemplate>
-                <DataTemplate>
-                    <Grid Height="0" />
-                </DataTemplate>
-            </TabControl.ContentTemplate>
-        </TabControl>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+            <TabControl HorizontalAlignment="Left" ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab, Mode=TwoWay}">
+                <TabControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:DocumentTabViewModel}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Title}" VerticalAlignment="Center" MaxWidth="160"
+                                       TextTrimming="CharacterEllipsis" Margin="0,0,6,0" />
+                            <Button Content="×" Width="18" Height="18" Padding="0" FontSize="11"
+                                    Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                    CommandParameter="{Binding}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
+                        <Grid Height="0" />
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
+            <!-- Chrome-style "new tab" button, sitting right after the last tab's × -->
+            <Button Content="+" Width="24" Height="24" Padding="0" FontSize="14"
+                    Margin="4,4,0,0" VerticalAlignment="Top"
+                    Command="{Binding OpenFileCommand}" ToolTip="새 탭 (열기)" />
+        </StackPanel>
 
         <!-- One persistent content block per open tab; only the selected tab's is visible. -->
         <ItemsControl ItemsSource="{Binding Tabs}">
