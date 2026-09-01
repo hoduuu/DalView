@@ -20,8 +20,7 @@ public partial class MainViewModel : ObservableObject
         _loader = loader;
     }
 
-    [ObservableProperty]
-    private ObservableCollection<DocumentTabViewModel> tabs = new();
+    public ObservableCollection<DocumentTabViewModel> Tabs { get; } = new();
 
     [ObservableProperty]
     private DocumentTabViewModel? selectedTab;
@@ -46,9 +45,9 @@ public partial class MainViewModel : ObservableObject
     public void OpenPathAsNewTab(string path)
     {
         var tab = new DocumentTabViewModel(_loader);
-        tab.OpenPath(path, password: null);
         Tabs.Add(tab);
         SelectedTab = tab;
+        tab.OpenPath(path, password: null);
     }
 
     [RelayCommand]

@@ -80,12 +80,13 @@ public partial class App : Application
                     var path = await reader.ReadLineAsync();
                     if (!string.IsNullOrEmpty(path))
                     {
-                        Dispatcher.Invoke(() => _mainWindow?.OpenFileFromExternalRequest(path));
+                        Dispatcher.BeginInvoke(() => _mainWindow?.OpenFileFromExternalRequest(path));
                     }
                 }
                 catch
                 {
                     // Pipe faulted or was torn down mid-connection; loop and open a fresh one.
+                    await Task.Delay(500);
                 }
             }
         });
