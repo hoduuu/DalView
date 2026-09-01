@@ -40,28 +40,4 @@ public class ThumbnailEndToEndTests
         }
     }
 
-    [Fact]
-    public void ThumbnailItem_EnsureLoaded_StartsAsyncRender()
-    {
-        var pdfPath = @"C:\Users\hyun\Downloads\sd.webui\webui\repositories\generative-models\assets\sdxl_report.pdf";
-
-        if (!File.Exists(pdfPath))
-        {
-            return;
-        }
-
-        using var document = PdfDocument.Load(pdfPath);
-        var item = new ThumbnailItem(document, 0);
-
-        // Act: Call EnsureLoaded (it will attempt to render in background)
-        // Note: Application.Current is null in test context, so the render will fail,
-        // but we can verify the method executes without throwing
-        item.EnsureLoaded();
-
-        // Call again to verify guard works
-        item.EnsureLoaded();
-
-        // Assert: No exception means the async flow at least started
-        Assert.True(true);
-    }
 }

@@ -89,7 +89,12 @@ public partial class MainViewModel : ObservableObject
         try
         {
             var newDocument = _loader.Load(path, password);
-            Document?.Dispose();
+            var oldDocument = Document;
+            if (oldDocument != null)
+            {
+                Task.Delay(TimeSpan.FromSeconds(2))
+                    .ContinueWith(_ => oldDocument.Dispose(), TaskScheduler.Default);
+            }
             Document = newDocument;
             PdfPath = path;
             Page = 0;
