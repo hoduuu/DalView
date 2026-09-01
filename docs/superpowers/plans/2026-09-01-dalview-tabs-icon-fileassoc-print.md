@@ -141,6 +141,9 @@ git commit -m "Add app icon"
 - Modify: `src/DalView/ViewModels/MainViewModel.cs` (full rewrite — becomes a thin tab container)
 - Modify: `src/DalView/MainWindow.xaml` (full rewrite of the body — wraps existing layout in a `TabControl`)
 - Modify: `src/DalView/MainWindow.xaml.cs`
+- Modify: `tests/DalView.Tests/MainViewModelTests.cs` (was written against v1's `MainViewModel` — its per-document API moved to `DocumentTabViewModel`)
+- Modify: `tests/DalView.Tests/MainViewModelSearchTests.cs` (same reason)
+- Modify: `tests/DalView.Tests/ThumbnailEndToEndTests.cs` (same reason)
 - Create: `tests/DalView.Tests/MainViewModelTabTests.cs`
 
 **Interfaces:**
@@ -398,101 +401,102 @@ Replace the entire contents of `src/DalView/MainWindow.xaml`:
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
-    <TabControl ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab, Mode=TwoWay}">
-        <TabControl.ItemTemplate>
-            <DataTemplate DataType="{x:Type vm:DocumentTabViewModel}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding Title}" VerticalAlignment="Center" MaxWidth="160"
-                               TextTrimming="CharacterEllipsis" Margin="0,0,6,0" />
-                    <Button Content="×" Width="18" Height="18" Padding="0" FontSize="11"
-                            Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                            CommandParameter="{Binding}" />
-                </StackPanel>
-            </DataTemplate>
-        </TabControl.ItemTemplate>
-        <TabControl.ContentTemplate>
-            <DataTemplate DataType="{x:Type vm:DocumentTabViewModel}">
-                <DockPanel>
-                    <ToolBar DockPanel.Dock="Top">
-                        <Button Content="열기"
-                                Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                                Padding="8,2" />
-                        <Separator />
-                        <TextBox Width="50" Text="{Binding DisplayPage, Mode=TwoWay}" TextAlignment="Center" />
-                        <TextBlock VerticalAlignment="Center" Margin="4,0">
-                            <Run Text="/ " /><Run Text="{Binding PageCount, Mode=OneWay}" />
-                        </TextBlock>
-                        <Separator />
-                        <Button Content="－" Command="{Binding ZoomOutCommand}" Width="28" />
-                        <TextBlock VerticalAlignment="Center" Margin="4,0" Text="{Binding Zoom, StringFormat={}{0:P0}}" />
-                        <Button Content="＋" Command="{Binding ZoomInCommand}" Width="28" />
-                        <CheckBox Content="폭 맞춤" IsChecked="{Binding FitWidth}" VerticalAlignment="Center" Margin="8,0" />
-                        <Separator />
-                        <TextBox Width="160" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
-                        <Button Content="검색" Command="{Binding SearchCommand}" Padding="6,2" />
-                        <Button Content="◀" Command="{Binding PreviousMatchCommand}" Width="26" />
-                        <Button Content="▶" Command="{Binding NextMatchCommand}" Width="26" />
-                    </ToolBar>
-                    <StatusBar DockPanel.Dock="Bottom">
-                        <StatusBarItem Content="{Binding StatusMessage}" />
-                    </StatusBar>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="220" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
+    <DockPanel>
+        <ToolBar DockPanel.Dock="Top">
+            <Button Content="열기" Command="{Binding OpenFileCommand}" Padding="8,2" />
+        </ToolBar>
+        <TabControl ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab, Mode=TwoWay}">
+            <TabControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type vm:DocumentTabViewModel}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" MaxWidth="160"
+                                   TextTrimming="CharacterEllipsis" Margin="0,0,6,0" />
+                        <Button Content="×" Width="18" Height="18" Padding="0" FontSize="11"
+                                Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                CommandParameter="{Binding}" />
+                    </StackPanel>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate DataType="{x:Type vm:DocumentTabViewModel}">
+                    <DockPanel>
+                        <ToolBar DockPanel.Dock="Top">
+                            <TextBox Width="50" Text="{Binding DisplayPage, Mode=TwoWay}" TextAlignment="Center" />
+                            <TextBlock VerticalAlignment="Center" Margin="4,0">
+                                <Run Text="/ " /><Run Text="{Binding PageCount, Mode=OneWay}" />
+                            </TextBlock>
+                            <Separator />
+                            <Button Content="－" Command="{Binding ZoomOutCommand}" Width="28" />
+                            <TextBlock VerticalAlignment="Center" Margin="4,0" Text="{Binding Zoom, StringFormat={}{0:P0}}" />
+                            <Button Content="＋" Command="{Binding ZoomInCommand}" Width="28" />
+                            <CheckBox Content="폭 맞춤" IsChecked="{Binding FitWidth}" VerticalAlignment="Center" Margin="8,0" />
+                            <Separator />
+                            <TextBox Width="160" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Content="검색" Command="{Binding SearchCommand}" Padding="6,2" />
+                            <Button Content="◀" Command="{Binding PreviousMatchCommand}" Width="26" />
+                            <Button Content="▶" Command="{Binding NextMatchCommand}" Width="26" />
+                        </ToolBar>
+                        <StatusBar DockPanel.Dock="Bottom">
+                            <StatusBarItem Content="{Binding StatusMessage}" />
+                        </StatusBar>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
-                        <TabControl Grid.Column="0">
-                            <TabItem Header="목차">
-                                <TreeView ItemsSource="{Binding Document.Bookmarks}">
-                                    <TreeView.ItemContainerStyle>
-                                        <Style TargetType="TreeViewItem">
-                                            <EventSetter Event="MouseDoubleClick" Handler="BookmarkItem_MouseDoubleClick" />
-                                        </Style>
-                                    </TreeView.ItemContainerStyle>
-                                    <TreeView.Resources>
-                                        <HierarchicalDataTemplate DataType="{x:Type pdfcore:PdfBookmark}" ItemsSource="{Binding Children}">
-                                            <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
-                                        </HierarchicalDataTemplate>
-                                    </TreeView.Resources>
-                                </TreeView>
-                            </TabItem>
-                            <TabItem Header="썸네일">
-                                <ListBox ItemsSource="{Binding Thumbnails}"
-                                         ScrollViewer.CanContentScroll="True">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <StackPanel Orientation="Horizontal" Margin="2" MouseDown="ThumbnailRow_MouseDown">
-                                                <Image Width="80" Loaded="ThumbnailImage_Loaded" Source="{Binding Thumbnail}" />
-                                                <TextBlock Text="{Binding DisplayNumber}" VerticalAlignment="Center" Margin="6,0" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                            </TabItem>
-                        </TabControl>
+                            <TabControl Grid.Column="0">
+                                <TabItem Header="목차">
+                                    <TreeView ItemsSource="{Binding Document.Bookmarks}">
+                                        <TreeView.ItemContainerStyle>
+                                            <Style TargetType="TreeViewItem">
+                                                <EventSetter Event="MouseDoubleClick" Handler="BookmarkItem_MouseDoubleClick" />
+                                            </Style>
+                                        </TreeView.ItemContainerStyle>
+                                        <TreeView.Resources>
+                                            <HierarchicalDataTemplate DataType="{x:Type pdfcore:PdfBookmark}" ItemsSource="{Binding Children}">
+                                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                                            </HierarchicalDataTemplate>
+                                        </TreeView.Resources>
+                                    </TreeView>
+                                </TabItem>
+                                <TabItem Header="썸네일">
+                                    <ListBox ItemsSource="{Binding Thumbnails}"
+                                             ScrollViewer.CanContentScroll="True">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Margin="2" MouseDown="ThumbnailRow_MouseDown">
+                                                    <Image Width="80" Loaded="ThumbnailImage_Loaded" Source="{Binding Thumbnail}" />
+                                                    <TextBlock Text="{Binding DisplayNumber}" VerticalAlignment="Center" Margin="6,0" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </TabItem>
+                            </TabControl>
 
-                        <pdf:PDFViewer x:Name="Viewer" Grid.Column="1"
-                                       Document="{Binding Document, Mode=TwoWay}"
-                                       Page="{Binding Page, Mode=TwoWay}"
-                                       PageCount="{Binding PageCount, Mode=OneWayToSource}"
-                                       Zoom="{Binding Zoom, Mode=TwoWay}"
-                                       ZoomMin="{Binding ZoomMin}"
-                                       ZoomMax="{Binding ZoomMax}"
-                                       FitWidth="{Binding FitWidth}"
-                                       Matches="{Binding Matches}"
-                                       MatchIndex="{Binding MatchIndex, Mode=TwoWay}"
-                                       HighlightAllMatches="{Binding HighlightAllMatches}"
-                                       Padding="12" />
-                    </Grid>
-                </DockPanel>
-            </DataTemplate>
-        </TabControl.ContentTemplate>
-    </TabControl>
+                            <pdf:PDFViewer x:Name="Viewer" Grid.Column="1"
+                                           Document="{Binding Document, Mode=TwoWay}"
+                                           Page="{Binding Page, Mode=TwoWay}"
+                                           PageCount="{Binding PageCount, Mode=OneWayToSource}"
+                                           Zoom="{Binding Zoom, Mode=TwoWay}"
+                                           ZoomMin="{Binding ZoomMin}"
+                                           ZoomMax="{Binding ZoomMax}"
+                                           FitWidth="{Binding FitWidth}"
+                                           Matches="{Binding Matches}"
+                                           MatchIndex="{Binding MatchIndex, Mode=TwoWay}"
+                                           HighlightAllMatches="{Binding HighlightAllMatches}"
+                                           Padding="12" />
+                        </Grid>
+                    </DockPanel>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
+    </DockPanel>
 </Window>
 ```
 
-Note the two `RelativeSource={RelativeSource AncestorType=TabControl}` bindings ("열기" button, tab-close "×" button) — these are the ONLY two places that need to reach up from per-tab content to the tab-container `MainViewModel`; everything else in the toolbar/sidebar/viewer binds directly to the active `DocumentTabViewModel` exactly as in v1, unchanged. The inner `<TabControl Grid.Column="0">` (bookmarks/thumbnails sidebar) is unrelated to the OUTER new tab-strip `TabControl` — same control type, different purpose, already existed in v1.
+**Why "열기" moved out of the per-tab template (fix applied before dispatch — see plan Self-Review Notes):** `TabControl.ContentTemplate` only renders anything once a tab is selected. With `Tabs` empty at first launch, `SelectedTab` is null and the content area renders NOTHING — if "열기" lived in there (as an earlier draft of this plan had it), there would be no way to ever open a first file. Moving it into an always-visible outer `ToolBar` above the `TabControl` fixes this, and as a bonus no longer needs the `RelativeSource` hop at all — it binds `{Binding OpenFileCommand}` directly, since the outer `ToolBar`'s inherited `DataContext` is already `MainViewModel` (nothing overrides it above the `TabControl`). The tab-close "×" button is the ONLY binding left that needs `RelativeSource={RelativeSource AncestorType=TabControl}` (it lives inside `ItemTemplate`, whose `DataContext` is the individual `DocumentTabViewModel`). Everything else in the per-tab toolbar/sidebar/viewer binds directly to the active `DocumentTabViewModel`, unchanged from v1. The inner `<TabControl Grid.Column="0">` (bookmarks/thumbnails sidebar) is unrelated to the OUTER new tab-strip `TabControl` — same control type, different purpose, already existed in v1.
 
 - [ ] **Step 4: Update MainWindow.xaml.cs for per-tab PasswordRequired subscription and tab-scoped bookmark/thumbnail navigation**
 
@@ -602,7 +606,19 @@ public partial class MainWindow : Window
 }
 ```
 
-- [ ] **Step 5: Write a test proving tabs are independent**
+- [ ] **Step 5: Update the three existing test files that were written against v1's `MainViewModel`**
+
+These three test files (from the original 6-task plan) directly construct `MainViewModel` and call its per-document members (`OpenPath`, `SearchCommand`, `Matches`, `PageCount`, `Document`, `Thumbnails`, `PasswordRequired`, etc.) — all of which just moved to `DocumentTabViewModel` in Steps 1-2. Every member name is unchanged (Step 1 copied v1's `MainViewModel` content into `DocumentTabViewModel` verbatim), so the fix in each file is purely the constructor's type name — nothing else in these files needs to change.
+
+In `tests/DalView.Tests/MainViewModelTests.cs`: change both occurrences of `new MainViewModel(new FakeLoader(` to `new DocumentTabViewModel(new FakeLoader(`. No other changes — `vm.OpenPath(...)`, `vm.StatusMessage`, `vm.PasswordRequired` all still exist, now on `DocumentTabViewModel`, and the file already has `using DalView.ViewModels;`.
+
+In `tests/DalView.Tests/MainViewModelSearchTests.cs`:
+1. Add `using DalView.Services;` to the top `using` block (needed for `PdfiumDocumentLoader`, referenced next).
+2. Replace every occurrence of `new MainViewModel()` (there are 7, one per test method) with `new DocumentTabViewModel(new PdfiumDocumentLoader())`. `DocumentTabViewModel` has no parameterless constructor (unlike v1's `MainViewModel`, which kept one) — it always takes an explicit loader. `var viewModel = ...` infers the new type automatically; no other line in any of these 7 test methods needs to change.
+
+In `tests/DalView.Tests/ThumbnailEndToEndTests.cs`: change `var vm = new MainViewModel(loader);` to `var vm = new DocumentTabViewModel(loader);`. Also rename the test method `MainViewModel_OpenPath_PopulatesThumbnails_WithRealPdf` to `DocumentTabViewModel_OpenPath_PopulatesThumbnails_WithRealPdf` for consistency (cosmetic, but free while already touching this file — no behavior change).
+
+- [ ] **Step 6: Write a test proving tabs are independent**
 
 Create `tests/DalView.Tests/MainViewModelTabTests.cs`:
 
@@ -654,11 +670,26 @@ public class MainViewModelTabTests
             // Changing tab A's page must not affect tab B.
             tabA.Page = 1;
             Assert.Equal(0, tabB.Page);
+
+            tabA.Document?.Dispose();
+            tabB.Document?.Dispose();
         }
         finally
         {
-            File.Delete(pathA);
-            File.Delete(pathB);
+            foreach (var path in new[] { pathA, pathB })
+            {
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        File.Delete(path);
+                    }
+                    catch (IOException)
+                    {
+                        // File may still be locked by PDFium; cleaned up later by the temp folder.
+                    }
+                }
+            }
         }
     }
 
@@ -679,11 +710,26 @@ public class MainViewModelTabTests
 
             Assert.Single(vm.Tabs);
             Assert.Same(tabB, vm.Tabs[0]);
+
+            tabA.Document?.Dispose();
+            tabB.Document?.Dispose();
         }
         finally
         {
-            File.Delete(pathA);
-            File.Delete(pathB);
+            foreach (var path in new[] { pathA, pathB })
+            {
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        File.Delete(path);
+                    }
+                    catch (IOException)
+                    {
+                        // File may still be locked by PDFium; cleaned up later by the temp folder.
+                    }
+                }
+            }
         }
     }
 }
@@ -691,12 +737,12 @@ public class MainViewModelTabTests
 
 `CloseTabCommand.Execute(tabA)` deliberately does NOT test closing the LAST tab — that path calls `Application.Current?.Shutdown()`, which is a real app-lifetime side effect not meaningful to exercise from a unit test; the null-conditional in Step 2 is what keeps it safe to call in a test host at all (it becomes a no-op there).
 
-- [ ] **Step 6: Run the full test suite**
+- [ ] **Step 7: Run the full test suite**
 
 Run: `cd "D:/claude/DalView" && "/c/Users/hyun/AppData/Local/Microsoft/dotnet/dotnet.exe" test DalView.sln`
 Expected: all tests pass (19 existing + 2 new = 21), 0 build warnings/errors.
 
-- [ ] **Step 7: Build and manually verify tabs work**
+- [ ] **Step 8: Build and manually verify tabs work**
 
 Run: `"/c/Users/hyun/AppData/Local/Microsoft/dotnet/dotnet.exe" build DalView.sln`
 Expected: 0 errors.
@@ -704,11 +750,11 @@ Expected: 0 errors.
 Run: `"/c/Users/hyun/AppData/Local/Microsoft/dotnet/dotnet.exe" run --project src/DalView/DalView.csproj`
 Expected: open a PDF via "열기" — it opens in a tab. Click "열기" again and open a second, different PDF — a second tab appears and becomes active; the toolbar/sidebar/viewer now show the second document. Click back to the first tab — it shows the first document's own page/zoom/bookmarks/thumbnails, unaffected by anything done in the second tab. Click a tab's "×" — that tab closes; if it was the last tab, the app exits.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 cd "D:/claude/DalView"
-git add src/DalView/ViewModels/DocumentTabViewModel.cs src/DalView/ViewModels/MainViewModel.cs src/DalView/MainWindow.xaml src/DalView/MainWindow.xaml.cs tests/DalView.Tests/MainViewModelTabTests.cs
+git add src/DalView/ViewModels/DocumentTabViewModel.cs src/DalView/ViewModels/MainViewModel.cs src/DalView/MainWindow.xaml src/DalView/MainWindow.xaml.cs tests/DalView.Tests/MainViewModelTabTests.cs tests/DalView.Tests/MainViewModelTests.cs tests/DalView.Tests/MainViewModelSearchTests.cs tests/DalView.Tests/ThumbnailEndToEndTests.cs
 git commit -m "Split MainViewModel into per-tab DocumentTabViewModel; add tabbed UI"
 ```
 
