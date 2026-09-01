@@ -26,7 +26,7 @@ public class MainViewModelSearchTests
 
         try
         {
-            var viewModel = new MainViewModel();
+            var viewModel = new DocumentTabViewModel(new PdfiumDocumentLoader());
             viewModel.OpenPath(pdfPath, null);
 
             // Verify PDF loaded (MinimalPdfBuilder creates valid PDF structure)
@@ -77,7 +77,7 @@ public class MainViewModelSearchTests
 
         try
         {
-            var viewModel = new MainViewModel();
+            var viewModel = new DocumentTabViewModel(new PdfiumDocumentLoader());
             viewModel.OpenPath(pdfPath, null);
 
             // Act: Search and navigate
@@ -127,7 +127,7 @@ public class MainViewModelSearchTests
 
         try
         {
-            var viewModel = new MainViewModel();
+            var viewModel = new DocumentTabViewModel(new PdfiumDocumentLoader());
             viewModel.OpenPath(pdfPath, null);
 
             // Act: Search
@@ -178,7 +178,7 @@ public class MainViewModelSearchTests
 
         try
         {
-            var viewModel = new MainViewModel();
+            var viewModel = new DocumentTabViewModel(new PdfiumDocumentLoader());
             viewModel.OpenPath(pdfPath, null);
 
             // Act: Search and navigate to second match
@@ -226,7 +226,7 @@ public class MainViewModelSearchTests
 
         try
         {
-            var viewModel = new MainViewModel();
+            var viewModel = new DocumentTabViewModel(new PdfiumDocumentLoader());
             viewModel.OpenPath(pdfPath, null);
 
             // Act: Search
@@ -277,7 +277,7 @@ public class MainViewModelSearchTests
 
         try
         {
-            var viewModel = new MainViewModel();
+            var viewModel = new DocumentTabViewModel(new PdfiumDocumentLoader());
             viewModel.OpenPath(pdfPath, null);
 
             // Act: Search for text that doesn't exist
@@ -332,7 +332,7 @@ public class MainViewModelSearchTests
 
         try
         {
-            var viewModel = new MainViewModel();
+            var viewModel = new DocumentTabViewModel(new PdfiumDocumentLoader());
 
             // Act: open PDF A and run a search that finds matches
             viewModel.OpenPath(pdfAPath, null);
@@ -389,7 +389,7 @@ public class MainViewModelSearchTests
 
         try
         {
-            var viewModel = new MainViewModel();
+            var viewModel = new DocumentTabViewModel(new PdfiumDocumentLoader());
             viewModel.OpenPath(pdfPath, null);
 
             // Act: Search first

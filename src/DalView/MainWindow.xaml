@@ -4,80 +4,101 @@
         xmlns:pdf="clr-namespace:PdfiumViewer;assembly=PdfiumViewer"
         xmlns:vm="clr-namespace:DalView.ViewModels"
         xmlns:pdfcore="clr-namespace:PdfiumViewer.Core;assembly=PdfiumViewer"
-        Title="달뷰" Icon="Assets/icon.ico" Height="800" Width="1100" Background="#FAFAF8">
+        Icon="Assets/icon.ico"
+        Title="달뷰" Height="800" Width="1100" Background="#FAFAF8">
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
     <DockPanel>
         <ToolBar DockPanel.Dock="Top">
             <Button Content="열기" Command="{Binding OpenFileCommand}" Padding="8,2" />
-            <Separator />
-            <TextBox Width="50" Text="{Binding DisplayPage, Mode=TwoWay}" TextAlignment="Center" />
-            <TextBlock VerticalAlignment="Center" Margin="4,0">
-                <Run Text="/ " /><Run Text="{Binding PageCount, Mode=OneWay}" />
-            </TextBlock>
-            <Separator />
-            <Button Content="－" Command="{Binding ZoomOutCommand}" Width="28" />
-            <TextBlock VerticalAlignment="Center" Margin="4,0" Text="{Binding Zoom, StringFormat={}{0:P0}}" />
-            <Button Content="＋" Command="{Binding ZoomInCommand}" Width="28" />
-            <CheckBox Content="폭 맞춤" IsChecked="{Binding FitWidth}" VerticalAlignment="Center" Margin="8,0" />
-            <Separator />
-            <TextBox Width="160" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
-            <Button Content="검색" Command="{Binding SearchCommand}" Padding="6,2" />
-            <Button Content="◀" Command="{Binding PreviousMatchCommand}" Width="26" />
-            <Button Content="▶" Command="{Binding NextMatchCommand}" Width="26" />
         </ToolBar>
-        <StatusBar DockPanel.Dock="Bottom">
-            <StatusBarItem Content="{Binding StatusMessage}" />
-        </StatusBar>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="220" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+        <TabControl ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab, Mode=TwoWay}">
+            <TabControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type vm:DocumentTabViewModel}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" MaxWidth="160"
+                                   TextTrimming="CharacterEllipsis" Margin="0,0,6,0" />
+                        <Button Content="×" Width="18" Height="18" Padding="0" FontSize="11"
+                                Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                CommandParameter="{Binding}" />
+                    </StackPanel>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate DataType="{x:Type vm:DocumentTabViewModel}">
+                    <DockPanel>
+                        <ToolBar DockPanel.Dock="Top">
+                            <TextBox Width="50" Text="{Binding DisplayPage, Mode=TwoWay}" TextAlignment="Center" />
+                            <TextBlock VerticalAlignment="Center" Margin="4,0">
+                                <Run Text="/ " /><Run Text="{Binding PageCount, Mode=OneWay}" />
+                            </TextBlock>
+                            <Separator />
+                            <Button Content="－" Command="{Binding ZoomOutCommand}" Width="28" />
+                            <TextBlock VerticalAlignment="Center" Margin="4,0" Text="{Binding Zoom, StringFormat={}{0:P0}}" />
+                            <Button Content="＋" Command="{Binding ZoomInCommand}" Width="28" />
+                            <CheckBox Content="폭 맞춤" IsChecked="{Binding FitWidth}" VerticalAlignment="Center" Margin="8,0" />
+                            <Separator />
+                            <TextBox Width="160" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Content="검색" Command="{Binding SearchCommand}" Padding="6,2" />
+                            <Button Content="◀" Command="{Binding PreviousMatchCommand}" Width="26" />
+                            <Button Content="▶" Command="{Binding NextMatchCommand}" Width="26" />
+                        </ToolBar>
+                        <StatusBar DockPanel.Dock="Bottom">
+                            <StatusBarItem Content="{Binding StatusMessage}" />
+                        </StatusBar>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
-            <TabControl Grid.Column="0">
-                <TabItem Header="목차">
-                    <TreeView ItemsSource="{Binding Document.Bookmarks}">
-                        <TreeView.ItemContainerStyle>
-                            <Style TargetType="TreeViewItem">
-                                <EventSetter Event="MouseDoubleClick" Handler="BookmarkItem_MouseDoubleClick" />
-                            </Style>
-                        </TreeView.ItemContainerStyle>
-                        <TreeView.Resources>
-                            <HierarchicalDataTemplate DataType="{x:Type pdfcore:PdfBookmark}" ItemsSource="{Binding Children}">
-                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
-                            </HierarchicalDataTemplate>
-                        </TreeView.Resources>
-                    </TreeView>
-                </TabItem>
-                <TabItem Header="썸네일">
-                    <ListBox ItemsSource="{Binding Thumbnails}"
-                             ScrollViewer.CanContentScroll="True">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="2" MouseDown="ThumbnailRow_MouseDown">
-                                    <Image Width="80" Loaded="ThumbnailImage_Loaded" Source="{Binding Thumbnail}" />
-                                    <TextBlock Text="{Binding DisplayNumber}" VerticalAlignment="Center" Margin="6,0" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </TabItem>
-            </TabControl>
+                            <TabControl Grid.Column="0">
+                                <TabItem Header="목차">
+                                    <TreeView ItemsSource="{Binding Document.Bookmarks}">
+                                        <TreeView.ItemContainerStyle>
+                                            <Style TargetType="TreeViewItem">
+                                                <EventSetter Event="MouseDoubleClick" Handler="BookmarkItem_MouseDoubleClick" />
+                                            </Style>
+                                        </TreeView.ItemContainerStyle>
+                                        <TreeView.Resources>
+                                            <HierarchicalDataTemplate DataType="{x:Type pdfcore:PdfBookmark}" ItemsSource="{Binding Children}">
+                                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                                            </HierarchicalDataTemplate>
+                                        </TreeView.Resources>
+                                    </TreeView>
+                                </TabItem>
+                                <TabItem Header="썸네일">
+                                    <ListBox ItemsSource="{Binding Thumbnails}"
+                                             ScrollViewer.CanContentScroll="True">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal" Margin="2" MouseDown="ThumbnailRow_MouseDown">
+                                                    <Image Width="80" Loaded="ThumbnailImage_Loaded" Source="{Binding Thumbnail}" />
+                                                    <TextBlock Text="{Binding DisplayNumber}" VerticalAlignment="Center" Margin="6,0" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </TabItem>
+                            </TabControl>
 
-            <pdf:PDFViewer x:Name="Viewer" Grid.Column="1"
-                           Document="{Binding Document, Mode=TwoWay}"
-                           Page="{Binding Page, Mode=TwoWay}"
-                           PageCount="{Binding PageCount, Mode=OneWayToSource}"
-                           Zoom="{Binding Zoom, Mode=TwoWay}"
-                           ZoomMin="{Binding ZoomMin}"
-                           ZoomMax="{Binding ZoomMax}"
-                           FitWidth="{Binding FitWidth}"
-                           Matches="{Binding Matches}"
-                           MatchIndex="{Binding MatchIndex, Mode=TwoWay}"
-                           HighlightAllMatches="{Binding HighlightAllMatches}"
-                           Padding="12" />
-        </Grid>
+                            <pdf:PDFViewer x:Name="Viewer" Grid.Column="1"
+                                           Document="{Binding Document, Mode=TwoWay}"
+                                           Page="{Binding Page, Mode=TwoWay}"
+                                           PageCount="{Binding PageCount, Mode=OneWayToSource}"
+                                           Zoom="{Binding Zoom, Mode=TwoWay}"
+                                           ZoomMin="{Binding ZoomMin}"
+                                           ZoomMax="{Binding ZoomMax}"
+                                           FitWidth="{Binding FitWidth}"
+                                           Matches="{Binding Matches}"
+                                           MatchIndex="{Binding MatchIndex, Mode=TwoWay}"
+                                           HighlightAllMatches="{Binding HighlightAllMatches}"
+                                           Padding="12" />
+                        </Grid>
+                    </DockPanel>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
     </DockPanel>
 </Window>

@@ -8,7 +8,7 @@ namespace DalView.Tests;
 public class ThumbnailEndToEndTests
 {
     [Fact]
-    public void MainViewModel_OpenPath_PopulatesThumbnails_WithRealPdf()
+    public void DocumentTabViewModel_OpenPath_PopulatesThumbnails_WithRealPdf()
     {
         // Use a real PDF from the system if available
         var pdfPath = @"C:\Users\hyun\Downloads\sd.webui\webui\repositories\generative-models\assets\sdxl_report.pdf";
@@ -20,7 +20,7 @@ public class ThumbnailEndToEndTests
         }
 
         var loader = new PdfiumDocumentLoader();
-        var vm = new MainViewModel(loader);
+        var vm = new DocumentTabViewModel(loader);
 
         // Act: Open the real PDF
         vm.OpenPath(pdfPath, password: null);

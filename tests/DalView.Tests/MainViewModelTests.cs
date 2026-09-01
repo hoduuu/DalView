@@ -32,7 +32,7 @@ public class MainViewModelTests
     [Fact]
     public void OpenPath_CorruptedFile_SetsStatusMessage_WithoutThrowing()
     {
-        var vm = new MainViewModel(new FakeLoader(PdfError.InvalidFormat));
+        var vm = new DocumentTabViewModel(new FakeLoader(PdfError.InvalidFormat));
 
         vm.OpenPath("bad.pdf", null);
 
@@ -42,7 +42,7 @@ public class MainViewModelTests
     [Fact]
     public void OpenPath_PasswordProtected_RaisesPasswordRequired()
     {
-        var vm = new MainViewModel(new FakeLoader(PdfError.PasswordProtected));
+        var vm = new DocumentTabViewModel(new FakeLoader(PdfError.PasswordProtected));
         string? raisedPath = null;
         vm.PasswordRequired += (_, path) => raisedPath = path;
 
