@@ -4,7 +4,7 @@
         xmlns:pdf="clr-namespace:PdfiumViewer;assembly=PdfiumViewer"
         xmlns:vm="clr-namespace:DalView.ViewModels"
         xmlns:pdfcore="clr-namespace:PdfiumViewer.Core;assembly=PdfiumViewer"
-        Title="달뷰" Height="800" Width="1100" Background="#FAFAF8">
+        Title="달뷰" Icon="Assets/icon.ico" Height="800" Width="1100" Background="#FAFAF8">
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
