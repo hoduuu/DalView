@@ -8,7 +8,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>DalView</AssemblyName>
     <RootNamespace>DalView</RootNamespace>
-    <ApplicationTitle>달뷰</ApplicationTitle>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>false</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>

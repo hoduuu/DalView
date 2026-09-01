@@ -1,7 +1,6 @@
 using System.IO;
 using DalView.Services;
 using DalView.ViewModels;
-using PdfiumViewer.Core;
 using Xunit;
 
 namespace DalView.Tests;
@@ -39,5 +38,4 @@ public class ThumbnailEndToEndTests
             Assert.Equal(i + 1, vm.Thumbnails[i].DisplayNumber);
         }
     }
-
 }

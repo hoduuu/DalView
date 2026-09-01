@@ -12,7 +12,7 @@
         <ToolBar DockPanel.Dock="Top">
             <Button Content="열기" Command="{Binding OpenFileCommand}" Padding="8,2" />
             <Separator />
-            <TextBox Width="50" Text="{Binding Page, Mode=TwoWay}" TextAlignment="Center" />
+            <TextBox Width="50" Text="{Binding DisplayPage, Mode=TwoWay}" TextAlignment="Center" />
             <TextBlock VerticalAlignment="Center" Margin="4,0">
                 <Run Text="/ " /><Run Text="{Binding PageCount, Mode=OneWay}" />
             </TextBlock>

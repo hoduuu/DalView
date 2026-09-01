@@ -36,6 +36,15 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private int page;
 
+    /// <summary>1-based page number for display in the toolbar. <see cref="Page"/> itself stays 0-based.</summary>
+    public int DisplayPage
+    {
+        get => Page + 1;
+        set => Page = value - 1;
+    }
+
+    partial void OnPageChanged(int value) => OnPropertyChanged(nameof(DisplayPage));
+
     [ObservableProperty]
     private int pageCount;
 
@@ -91,15 +100,13 @@ public partial class MainViewModel : ObservableObject
         try
         {
             var newDocument = _loader.Load(path, password);
-            var oldDocument = Document;
-            if (oldDocument != null)
-            {
-                Task.Delay(TimeSpan.FromSeconds(2))
-                    .ContinueWith(_ => oldDocument.Dispose(), TaskScheduler.Default);
-            }
+            // PDFViewer's DocumentChanged handler disposes the previous Document synchronously
+            // when this property changes — do not dispose it here (would be a redundant no-op at best).
             Document = newDocument;
             PdfPath = path;
             Page = 0;
+            Matches = null;
+            MatchIndex = -1;
             StatusMessage = $"{Path.GetFileName(path)} ({newDocument.PageCount} pages)";
             Thumbnails = new ObservableCollection<ThumbnailItem>(
                 Enumerable.Range(0, newDocument.PageCount).Select(i => new ThumbnailItem(newDocument, i)));
@@ -110,6 +117,10 @@ public partial class MainViewModel : ObservableObject
             PasswordRequired?.Invoke(this, path);
         }
         catch (PdfException ex)
+        {
+            StatusMessage = $"PDF를 열 수 없습니다: {ex.Message}";
+        }
+        catch (Exception ex)
         {
             StatusMessage = $"PDF를 열 수 없습니다: {ex.Message}";
         }
@@ -134,6 +145,8 @@ public partial class MainViewModel : ObservableObject
         var doc = Document;
         var query = SearchText;
         var result = await Task.Run(() => doc.Search(query, matchCase: false, wholeWord: false, 0, doc.PageCount - 1));
+
+        if (Document != doc) return;
 
         Matches = result;
         MatchIndex = result.Items.Count > 0 ? 0 : -1;

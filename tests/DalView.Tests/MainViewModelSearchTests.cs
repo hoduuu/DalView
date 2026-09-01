@@ -30,7 +30,6 @@ public class MainViewModelSearchTests
             viewModel.OpenPath(pdfPath, null);
 
             // Verify PDF loaded (MinimalPdfBuilder creates valid PDF structure)
-            // Note: PageCount may be 0 due to PDF parsing, but Document should be non-null
             Assert.NotNull(viewModel.Document);
 
             // Act: Perform search for term that appears on both pages
@@ -309,6 +308,69 @@ public class MainViewModelSearchTests
                 catch (IOException)
                 {
                     // File may still be locked by PDFium, it will be cleaned up by temp folder
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public async Task OpeningDifferentDocument_ResetsSearchState_AndRebuildsThumbnails()
+    {
+        // Arrange: two distinct PDFs
+        var pdfABytes = MinimalPdfBuilder.Build(
+            "Alpha searchable content here",
+            "Alpha second page content"
+        );
+        var pdfBBytes = MinimalPdfBuilder.Build(
+            "Beta page one text",
+            "Beta page two text"
+        );
+        var pdfAPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".pdf");
+        var pdfBPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".pdf");
+        await File.WriteAllBytesAsync(pdfAPath, pdfABytes);
+        await File.WriteAllBytesAsync(pdfBPath, pdfBBytes);
+
+        try
+        {
+            var viewModel = new MainViewModel();
+
+            // Act: open PDF A and run a search that finds matches
+            viewModel.OpenPath(pdfAPath, null);
+            viewModel.SearchText = "Alpha";
+            await viewModel.SearchCommand.ExecuteAsync(null);
+
+            Assert.NotNull(viewModel.Matches);
+            Assert.True(viewModel.Matches.Items.Count > 0);
+            Assert.Equal(0, viewModel.MatchIndex);
+
+            // Act: open a different PDF (PDF B) without touching search state directly
+            viewModel.OpenPath(pdfBPath, null);
+
+            // Assert: search state from PDF A no longer applies, thumbnails match PDF B's real page count
+            Assert.Null(viewModel.Matches);
+            Assert.Equal(-1, viewModel.MatchIndex);
+            Assert.Equal(2, viewModel.Thumbnails.Count);
+            Assert.Equal(viewModel.Document!.PageCount, viewModel.Thumbnails.Count);
+
+            // Cleanup
+            viewModel.Document?.Dispose();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+        finally
+        {
+            foreach (var path in new[] { pdfAPath, pdfBPath })
+            {
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        File.Delete(path);
+                    }
+                    catch (IOException)
+                    {
+                        // File may still be locked by PDFium, it will be cleaned up by temp folder
+                    }
                 }
             }
         }
