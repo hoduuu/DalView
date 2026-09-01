@@ -10,6 +10,11 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        if (DataContext is MainViewModel vm)
+        {
+            vm.PasswordRequired += OnPasswordRequired;
+        }
     }
 
     private void BookmarkItem_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -34,6 +39,15 @@ public partial class MainWindow : Window
         if (sender is FrameworkElement { DataContext: ThumbnailItem item } && DataContext is MainViewModel vm)
         {
             vm.Page = item.PageIndex;
+        }
+    }
+
+    private void OnPasswordRequired(object? sender, string path)
+    {
+        var dialog = new PasswordDialog { Owner = this };
+        if (dialog.ShowDialog() == true && sender is MainViewModel vm)
+        {
+            vm.OpenPath(path, dialog.Password);
         }
     }
 }

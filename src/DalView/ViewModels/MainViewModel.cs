@@ -16,6 +16,8 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly IPdfDocumentLoader _loader;
 
+    public event EventHandler<string>? PasswordRequired;
+
     public MainViewModel() : this(new PdfiumDocumentLoader())
     {
     }
@@ -105,7 +107,7 @@ public partial class MainViewModel : ObservableObject
         catch (PdfException ex) when (ex.Error == PdfError.PasswordProtected)
         {
             StatusMessage = "이 PDF는 암호로 보호되어 있습니다.";
-            throw;
+            PasswordRequired?.Invoke(this, path);
         }
         catch (PdfException ex)
         {
