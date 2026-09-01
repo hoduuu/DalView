@@ -62,6 +62,23 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// PdfiumViewer.Net.WPF's default control template leaves its internal ScrollViewer
+    /// (named PART_Scroll) at WPF's default HorizontalScrollBarVisibility=Disabled, so a page
+    /// wider than the viewport (zoomed in, or a landscape page) is clipped with no way to pan
+    /// to it. The template can't be safely redefined from application XAML (its ItemsPanel
+    /// setter uses an internal-to-the-library panel type), so reach into the already-applied
+    /// template for the already-named part instead and flip the one property that matters.
+    /// </summary>
+    private void PDFViewer_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is Control control
+            && control.Template?.FindName("PART_Scroll", control) is ScrollViewer scrollViewer)
+        {
+            scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+        }
+    }
+
     private void ThumbnailRow_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         if (sender is FrameworkElement { DataContext: ThumbnailItem item } row

@@ -13,7 +13,18 @@
         <ToolBar DockPanel.Dock="Top">
             <Button Content="열기" Command="{Binding OpenFileCommand}" Padding="8,2" />
         </ToolBar>
-        <TabControl ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab, Mode=TwoWay}">
+
+        <!--
+            Tab strip (headers only). ContentTemplate is deliberately left empty/zero-height:
+            using it for the real per-tab content would mean every tab shares ONE ContentPresenter
+            whose DataContext gets swapped on every tab switch — and PdfiumViewer's PDFViewer
+            control disposes its previous Document the instant its Document property changes.
+            That silently destroyed every background tab's document the moment you switched away
+            from it (the bug behind "탭을 여러 개 열면 마지막 탭에서 Cannot access disposed object").
+            The real content lives in the ItemsControl below instead, where each tab gets its own
+            persistent PDFViewer that is only ever bound to that tab's own Document.
+        -->
+        <TabControl DockPanel.Dock="Top" ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab, Mode=TwoWay}">
             <TabControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type vm:DocumentTabViewModel}">
                     <StackPanel Orientation="Horizontal">
@@ -26,8 +37,40 @@
                 </DataTemplate>
             </TabControl.ItemTemplate>
             <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <Grid Height="0" />
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
+
+        <!-- One persistent content block per open tab; only the selected tab's is visible. -->
+        <ItemsControl ItemsSource="{Binding Tabs}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type vm:DocumentTabViewModel}">
+                    <!--
+                        Visibility="Hidden", not Collapsed: Collapsed shrinks this whole subtree
+                        (including the PDFViewer) to 0x0, and PDFViewer's FitWidth math divides by
+                        its own ActualWidth — a 0-sized inactive tab's PDFViewer spun the CPU into
+                        a busy layout-retry loop as soon as a second tab existed. Hidden keeps a
+                        real, non-zero layout size (so FitWidth stays sane) while still not being
+                        painted or hit-testable.
+                    -->
                     <DockPanel>
+                        <DockPanel.Style>
+                            <Style TargetType="DockPanel">
+                                <Setter Property="Visibility" Value="Hidden" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DockPanel.Style>
                         <ToolBar DockPanel.Dock="Top">
                             <TextBox Width="50" Text="{Binding DisplayPage, Mode=TwoWay}" TextAlignment="Center" />
                             <TextBlock VerticalAlignment="Center" Margin="4,0">
@@ -85,7 +128,8 @@
                                 </TabItem>
                             </TabControl>
 
-                            <pdf:PDFViewer x:Name="Viewer" Grid.Column="1"
+                            <pdf:PDFViewer Grid.Column="1"
+                                           Loaded="PDFViewer_Loaded"
                                            Document="{Binding Document, Mode=TwoWay}"
                                            Page="{Binding Page, Mode=TwoWay}"
                                            PageCount="{Binding PageCount, Mode=OneWayToSource}"
@@ -100,7 +144,7 @@
                         </Grid>
                     </DockPanel>
                 </DataTemplate>
-            </TabControl.ContentTemplate>
-        </TabControl>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </DockPanel>
 </Window>

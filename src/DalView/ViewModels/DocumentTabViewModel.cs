@@ -57,7 +57,14 @@ public partial class DocumentTabViewModel : ObservableObject
     private double zoomMax = 4.0;
 
     [ObservableProperty]
-    private bool fitWidth;
+    private bool fitWidth = true;
+
+    /// <summary>Whether this tab is the currently active one. Kept in sync by MainViewModel
+    /// whenever SelectedTab changes, and used to show/hide this tab's persistent content
+    /// (each tab owns its own PDFViewer instance so switching tabs never touches another
+    /// tab's Document — see MainWindow.xaml).</summary>
+    [ObservableProperty]
+    private bool isSelected;
 
     [ObservableProperty]
     private string? statusMessage;

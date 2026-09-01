@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -24,6 +25,12 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private DocumentTabViewModel? selectedTab;
+
+    partial void OnSelectedTabChanged(DocumentTabViewModel? oldValue, DocumentTabViewModel? newValue)
+    {
+        if (oldValue != null) oldValue.IsSelected = false;
+        if (newValue != null) newValue.IsSelected = true;
+    }
 
     [RelayCommand]
     private void OpenFile()
@@ -54,6 +61,17 @@ public partial class MainViewModel : ObservableObject
     private void CloseTab(DocumentTabViewModel tab)
     {
         Tabs.Remove(tab);
+
+        // Each tab now owns a persistent, never-shared PDFViewer (see MainWindow.xaml), so
+        // closing a tab is the only thing that should ever dispose its document. Give any
+        // in-flight background thumbnail render (ThumbnailItem.EnsureLoaded) a wide grace
+        // window to finish before freeing the native handle out from under it.
+        var doc = tab.Document;
+        if (doc != null)
+        {
+            Task.Delay(TimeSpan.FromSeconds(2)).ContinueWith(_ => doc.Dispose(), TaskScheduler.Default);
+        }
+
         if (Tabs.Count == 0)
         {
             Application.Current?.Shutdown();
