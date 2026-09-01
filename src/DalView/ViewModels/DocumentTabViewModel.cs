@@ -150,4 +150,17 @@ public partial class DocumentTabViewModel : ObservableObject
         if (Matches == null) return;
         MatchIndex = SearchNavigator.Previous(MatchIndex, Matches.Items.Count);
     }
+
+    [RelayCommand]
+    private void Print()
+    {
+        if (Document == null) return;
+
+        using var printDocument = Document.CreatePrintDocument();
+        using var dialog = new System.Windows.Forms.PrintDialog { Document = printDocument };
+        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        {
+            printDocument.Print();
+        }
+    }
 }

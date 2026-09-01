@@ -43,6 +43,8 @@
                             <Button Content="검색" Command="{Binding SearchCommand}" Padding="6,2" />
                             <Button Content="◀" Command="{Binding PreviousMatchCommand}" Width="26" />
                             <Button Content="▶" Command="{Binding NextMatchCommand}" Width="26" />
+                            <Separator />
+                            <Button Content="인쇄" Command="{Binding PrintCommand}" Padding="8,2" />
                         </ToolBar>
                         <StatusBar DockPanel.Dock="Bottom">
                             <StatusBarItem Content="{Binding StatusMessage}" />
