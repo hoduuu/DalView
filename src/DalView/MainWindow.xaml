@@ -88,7 +88,7 @@
                             <Button Content="＋" Command="{Binding ZoomInCommand}" Width="28" />
                             <CheckBox Content="폭 맞춤" IsChecked="{Binding FitWidth}" VerticalAlignment="Center" Margin="8,0" />
                             <Separator />
-                            <TextBox Width="160" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox Width="90" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
                             <Button Content="검색" Command="{Binding SearchCommand}" Padding="6,2" />
                             <Button Content="◀" Command="{Binding PreviousMatchCommand}" Width="26" />
                             <Button Content="▶" Command="{Binding NextMatchCommand}" Width="26" />

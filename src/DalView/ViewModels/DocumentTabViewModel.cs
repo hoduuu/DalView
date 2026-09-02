@@ -50,6 +50,17 @@ public partial class DocumentTabViewModel : ObservableObject
     [ObservableProperty]
     private double zoom = 1.0;
 
+    /// <summary>
+    /// FitWidth makes the PDFViewer control ignore Zoom entirely for sizing. Zoom can change
+    /// from more than one place — the toolbar +/- buttons, but also the library's own built-in
+    /// Ctrl+MouseWheel handler (PDFViewer.OnPreviewMouseWheel), which writes straight into the
+    /// TwoWay-bound Zoom property without going through any of our commands. Hooking the
+    /// property itself (rather than just the +/- button commands) means FitWidth turns off no
+    /// matter which path changed Zoom — otherwise Ctrl+wheel zoom updated the percentage text
+    /// but the page never visibly resized, since FitWidth was still overriding it.
+    /// </summary>
+    partial void OnZoomChanged(double value) => FitWidth = false;
+
     [ObservableProperty]
     private double zoomMin = 0.1;
 
@@ -116,20 +127,10 @@ public partial class DocumentTabViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ZoomIn()
-    {
-        // FitWidth makes the library ignore Zoom entirely for sizing — leaving it on made the
-        // zoom buttons visibly do nothing. Manually zooming means the user wants manual control.
-        FitWidth = false;
-        Zoom = Math.Min(ZoomMax, Math.Round(Zoom + 0.1, 2));
-    }
+    private void ZoomIn() => Zoom = Math.Min(ZoomMax, Math.Round(Zoom + 0.1, 2));
 
     [RelayCommand]
-    private void ZoomOut()
-    {
-        FitWidth = false;
-        Zoom = Math.Max(ZoomMin, Math.Round(Zoom - 0.1, 2));
-    }
+    private void ZoomOut() => Zoom = Math.Max(ZoomMin, Math.Round(Zoom - 0.1, 2));
 
     [RelayCommand]
     private async Task SearchAsync()
